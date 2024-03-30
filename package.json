@@ -1,0 +1,19 @@
+{
+  "name": "catchup",
+  "version": "1.0.0",
+  "description": "A tool to help you keep up with the ever expanding research in the AI domain.",
+  "main": "index.js",
+  "scripts": {
+    "test": "catchup"
+  },
+  "author": "vaishnavi.sonawane",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.6.8",
+    "blessed": "^0.1.81",
+    "blessed-contrib": "^4.11.0",
+    "figlet": "^1.7.0",
+    "fs": "^0.0.1-security",
+    "xml2js": "^0.6.2"
+  }
+}
