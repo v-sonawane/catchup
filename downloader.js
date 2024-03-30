@@ -21,6 +21,8 @@ async function downloader(domain, outputPath, updateWidgetContent, maxResults = 
             fs.mkdirSync(outputPath, { recursive: true });
         }
 
+        const downloadedFiles = []; // Array to store downloaded file information
+
         // Check if response contains any entries
         if (result.feed && result.feed.entry) {
             const entries = Array.isArray(result.feed.entry) ? result.feed.entry : [result.feed.entry];
@@ -47,7 +49,10 @@ async function downloader(domain, outputPath, updateWidgetContent, maxResults = 
 
                     // Wait for the download to finish
                     await new Promise((resolve, reject) => {
-                        writer.on('finish', resolve);
+                        writer.on('finish', () => {
+                            downloadedFiles.push({ name: paperFileName, path: paperPath });
+                            resolve();
+                        });
                         writer.on('error', reject);
                     });
 
@@ -63,12 +68,13 @@ async function downloader(domain, outputPath, updateWidgetContent, maxResults = 
         } else {
             console.error('No papers found in the API response.');
         }
+
+        return downloadedFiles; // Return the array of downloaded files
     } catch (error) {
         console.error('Error downloading papers:', error.response ? error.response.data : error.message);
+        return []; // Return an empty array if an error occurs
     }
 }
-
-
 
 module.exports = {
     downloader

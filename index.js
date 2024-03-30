@@ -4,16 +4,21 @@ const blessed = require('blessed');
 const contrib = require('blessed-contrib');
 const figlet = require('figlet');
 const { downloader } = require('./downloader');
+const fs = require('fs');
+const path = require('path');
 
 // Function to start downloading papers
-async function startDownload(domain, outputPath, updateWidgetContent) {
+async function startDownload(domain, outputPath, updateWidgetContent, updateTodoList) {
     try {
         // Update widget content to indicate downloading has started
         updateWidgetContent('Downloading papers...');
         // Call the downloader function to start downloading papers
-        await downloader(domain, outputPath, updateWidgetContent);
+        const downloadedFiles = await downloader(domain, outputPath, updateWidgetContent);
         // Update widget content to indicate downloads completed
         updateWidgetContent('Downloads completed.');
+
+        // Update to-do list with downloaded papers
+        updateTodoList(downloadedFiles);
     } catch (error) {
         // Update widget content to indicate an error occurred
         updateWidgetContent(`Error downloading papers: ${error}`);
@@ -45,14 +50,41 @@ figlet('Catch Up', function(err, data) {
         style: { border: { fg: 'green' } }
     });
 
-    // Checklist Widget
-    const checklistBox = grid.set(9, 0, 3, 12, blessed.box, {
-        label: 'Checklist',
-        content: 'List of papers:\n- Paper 1\n- Paper 2\n- Paper 3\n',
-        style: { border: { fg: 'blue' } }
+    // To-Do List Widget
+    const todoList = blessed.list({
+        parent: screen,
+        label: 'To-Do List',
+        keys: true,
+        vi: true,
+        width: '30%',
+        height: '70%',
+        top: '20%',
+        left: '70%',
+        border: {
+            type: 'line'
+        },
+        style: {
+            fg: 'white',
+            bg: 'magenta',
+            border: {
+                fg: '#f0f0f0'
+            }
+        }
     });
 
-    /// Domain Input Box
+    // Callback function to update download widget content
+    function updateDownloadWidget(content) {
+        downloadPapersBox.setContent(content);
+        screen.render();
+    }
+
+    // Callback function to update to-do list with downloaded papers
+    function updateTodoList(downloadedFiles) {
+        todoList.setItems(downloadedFiles.map(file => file.name));
+        screen.render();
+    }
+
+    // Event handler for domain input
     const domainInput = blessed.textbox({
         parent: downloadPapersBox, // Append to downloadPapersBox widget
         top: 'center',
@@ -76,23 +108,15 @@ figlet('Catch Up', function(err, data) {
     downloadPapersBox.append(domainInput); // Append the domainInput to the downloadPapersBox widget
     domainInput.focus();
 
-   
-
-    // Callback function to update download widget content
-    function updateDownloadWidget(content) {
-        downloadPapersBox.setContent(content);
-        screen.render();
-    }
-
     // Event handler for domain input
     domainInput.key(['enter'], function(ch, key) {
         const domain = domainInput.getValue();
-        startDownload(domain, './downloaded_papers', updateDownloadWidget);
+        startDownload(domain, './downloaded_papers', updateDownloadWidget, updateTodoList);
     });
 
     // Event handler for starting downloads
     screen.key(['d'], async function(ch, key) {
-        startDownload('physics', './downloaded_papers', updateDownloadWidget);
+        startDownload('physics', './downloaded_papers', updateDownloadWidget, updateTodoList);
     });
 
     // Event handler for quitting the program
