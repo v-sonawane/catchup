@@ -52,7 +52,7 @@ figlet('Catch Up', function(err, data) {
         style: { border: { fg: 'blue' } }
     });
 
-    // Domain Input Box
+    /// Domain Input Box
     const domainInput = blessed.textbox({
         parent: downloadPapersBox, // Append to downloadPapersBox widget
         top: 'center',
@@ -73,8 +73,10 @@ figlet('Catch Up', function(err, data) {
             }
         }
     });
-    screen.append(domainInput);
+    downloadPapersBox.append(domainInput); // Append the domainInput to the downloadPapersBox widget
     domainInput.focus();
+
+   
 
     // Callback function to update download widget content
     function updateDownloadWidget(content) {
